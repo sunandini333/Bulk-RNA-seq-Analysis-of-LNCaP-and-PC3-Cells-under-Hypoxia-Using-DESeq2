@@ -16,19 +16,29 @@ The NCBI stores sequencing data in the form of Sequence Read Archive (SRA) files
 # Download SRA files using SRA tools
 To download the SRA files onto our machine, we will use the NCBI’s SRA toolkit. In linux, you can type: sudo apt install sra-toolkit in your command line to install the toolkit. You can read more about SRA toolkit here: https://www.ncbi.nlm.nih.gov/books/NBK242621/.
 The toolkit works by first using the prefetch command to download the SRA file associated with the specified SRA ID. The SRA file contains a set of “instructions” for downloading the sequencing data associated with the SRA ID from NCBI.
+<img width="940" height="259" alt="image" src="https://github.com/user-attachments/assets/28daebfe-a15b-4e0a-af74-8309a1da02da" />
+
 
  
 We downloaded all the SRA files by making a new directory rnaseq_project. We can see by giving ls command.
+<img width="940" height="97" alt="image" src="https://github.com/user-attachments/assets/bda8aaea-a794-436c-9b25-a2439337aec8" />
+
  
 # Converting SRA files to Fastq file:
 We can now use fastq-dump to extract the contents of it into a FASTQ file. The Edwards lab at SDSU provides a nice tutorial for how to use fastq-dump here: https://edwards.sdsu.edu/research/fastq-dump/. This will create a file called SRRXXXXXXX_pass.fastq.gz inside the directory where fastq-dump was called. The “.gz” just means that the file is compressed. To perform it in 20 SRA files, we wrote a Python script which will generate a fastq file for each of the 20 SRA files in a subdirectory called tempfa.
+<img width="940" height="437" alt="image" src="https://github.com/user-attachments/assets/2ebe5141-a67f-43e3-a760-441259874202" />
+<img width="940" height="339" alt="image" src="https://github.com/user-attachments/assets/d5b3afbe-a200-4627-9485-e647e6cf3c9e" />
+
+
  
 # REAL TIME UNDERSTANDING OF CONVERTING SRA FILE TO FASTQ FILE:
 By putting command
 watch -n 1 ls -la tempfa/
 we can easily understand the real time conversion of SRA to Fastq in the subdirectory called tempfa to crosscheck our progress.
- 
- 
+ <img width="940" height="43" alt="image" src="https://github.com/user-attachments/assets/179c5ffe-0230-4b07-a043-ba05e6e884f5" />
+
+ <img width="940" height="419" alt="image" src="https://github.com/user-attachments/assets/fa2d22f8-2c94-4764-8b9d-9ddcf7b7a1c9" />
+
 
 # Concatenation of files into total 8 files 
 Each of the LNCaP samples was associated with four SRA runs, which means that we obtained four resulting FASTQ files for each sample after running fastq_download.py. For each sample, we should concatenate the four files into a single FASTQ file by using the command cat. Below, I perform the concatenation for each of the LNCaP samples:
@@ -43,9 +53,12 @@ mv SRR7179540_pass.fastq.gz PC3_Hypoxia_S1.fastq.gz
 mv SRR7179541_pass.fastq.gz PC3_Hypoxia_S2.fastq.gz
 We won’t need the individual SRA runs anymore, so we can remove them all using the command rm SRR*, which removes all the files in the folder that begin with “SRR”. Now, the folder should contain a total of 8 FASTQ files: 4 for LNCaP and 4 for PC3. We are ready to begin aligning these FASTQ files to the reference genome!
 
- 
+<img width="940" height="228" alt="image" src="https://github.com/user-attachments/assets/f00e8880-e0e0-4e2b-8811-9f49637e70d4" />
 
- 
+
+ <img width="940" height="147" alt="image" src="https://github.com/user-attachments/assets/6c0c4071-9a7e-4f95-a12a-70be93c53407" />
+<img width="940" height="75" alt="image" src="https://github.com/user-attachments/assets/c537ee2e-8fc1-446d-808b-c7aac5ba325d" />
+
 
 # Performing FastQC:
 FastQC is a quality control tool for next-generation sequencing (NGS) data, especially FASTQ files.When you run it (like in your command), it checks the raw sequencing reads and produces reports that help you decide if your data is good enough to use for downstream analysis (alignment, quantification, etc.) or if it needs trimming/filtering.
@@ -68,7 +81,9 @@ o	Should be roughly even (except in special cases like RNA-seq with biases).
 •	Detects problems early → e.g., adapter contamination, poor quality, low diversity.
 •	Guides preprocessing → tells you if you need trimming, filtering, or removing adapters before alignment.
 
- 
+ <img width="940" height="190" alt="image" src="https://github.com/user-attachments/assets/4656956a-3461-440e-aaa5-d9e756782e48" />
+
+<img width="940" height="299" alt="image" src="https://github.com/user-attachments/assets/061ba542-71c2-4986-ae3b-12a7ed02691f" />
 
  
  By installing the fastqc at tempfa directory you can perform fastqc in the files having extension .fastq.gz in tempfa directory and saving the result in a new subdirectory names fastqc_results.
@@ -80,9 +95,11 @@ Here, When you analyze RNA-seq data, you usually generate many output files  for
 20 FastQC reports (.html + .zip files), so Reading each one manually is painful. So, MultiQC scans all these outputs and automatically creates one combined report.
 
 
+<img width="940" height="202" alt="image" src="https://github.com/user-attachments/assets/3697bb7a-9a29-443a-ac1d-9809bc1242e3" />
 
 
  
+<img width="940" height="190" alt="image" src="https://github.com/user-attachments/assets/18519ef7-5c08-4185-b669-5b21d6461cf0" />
 
 
  
@@ -95,19 +112,24 @@ After installing multiqc we need to run all the 8 fastqc results stored in the s
 By observing the fastqc and multiqc results we can understand that the data doesn’t need any trimming after noticing the basic statistics of each cell lines itself but still we performed trimming and compared the two multiqc result before trimming and after trimming to understand with data should we proceed for downstream processing.
 After installing Trimmomatic we get Trimmomatic—0.39 zip file grom the web and then after unzipping it we run the code for trimming for total 8 times on 8 different files.
 
+<img width="940" height="252" alt="image" src="https://github.com/user-attachments/assets/92145f0f-489b-4c1d-85a9-1fb217c6d20a" />
+<img width="940" height="344" alt="image" src="https://github.com/user-attachments/assets/2facc0ee-5473-4713-8e5f-3dcf0dd1ef57" />
 
 
+<img width="940" height="337" alt="image" src="https://github.com/user-attachments/assets/fd428474-525d-404f-aa17-b8619a6dacb1" />
 
 
-
+<img width="940" height="336" alt="image" src="https://github.com/user-attachments/assets/1508159e-f229-401a-8cfb-d027678ca945" />
 
  
  
 # Fastqc  and multiqc on trimmed files:
 Same as the step number 6 and 7 but this time it is perfomed on the trimmed files having extension .fastq and saved in a output subdirectory names fastqc_results_trimmed and for multiqc also likewise we did.
  
+<img width="940" height="352" alt="image" src="https://github.com/user-attachments/assets/55e38419-06a0-46cf-b400-b9ca428e54d9" />
 
- 
+ <img width="940" height="182" alt="image" src="https://github.com/user-attachments/assets/dac0e414-3410-48cc-9b9f-7b9f1b5f2c03" />
+
 
 # Quality Control and Trimming Decision
 After performing quality assessment using FastQC and aggregating the results with MultiQC, we compared the reports generated from both the raw FASTQ files and the trimmed FASTQ files.
@@ -116,7 +138,7 @@ Therefore, to preserve read length and maintain data integrity, we proceeded wit
 However, if in your dataset trimming results in improved read quality (e.g., removal of adapter contamination or low-quality bases), you should proceed with the trimmed FASTQ files for subsequent analysis steps.
 
 
-<img width="940" height="352" alt="image" src="https://github.com/user-attachments/assets/fb011dd3-5f84-4ad5-b6a9-a7d75714810f" />
+
 
 
 
