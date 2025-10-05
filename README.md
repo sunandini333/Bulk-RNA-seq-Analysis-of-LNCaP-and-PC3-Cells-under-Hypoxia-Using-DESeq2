@@ -1,122 +1,28 @@
-# BulkRNAseq_DESeq2_LNCaP_PC3_Hypoxia
+# Introduction
+a comprehensive workflow for analyzing bulk RNA-seq data from LNCaP and PC3 prostate cancer cell lines under hypoxic and normoxic conditions. The pipeline begins with raw FASTQ files, which are preprocessed using Trimmomatic to remove adapters and low-quality bases. Quality assessment is performed with FastQC, and MultiQC provides an aggregated overview of all samples, ensuring high-quality data for downstream analysis. High-quality reads are aligned to the human genome using HISAT2, generating count matrices for each sample. In R, the count data are normalized, and differential gene expression is analyzed using DESeq2. Genes are annotated with biotypes, and low-count or zero-count genes are filtered to improve statistical robustness. Principal component analysis (PCA) and heatmaps are generated to assess sample clustering and variation, while volcano plots visualize differentially expressed genes between conditions. The workflow includes detailed gene-level analyses, allowing visualization of normalized expression for individual genes across experimental groups. Functional enrichment and pathway analyses are conducted using ReactomePA and fgsea, highlighting pathways significantly altered under hypoxia. Genes are mapped from Ensembl IDs to Entrez IDs to enable pathway and gene set enrichment analyses, with visualization of top enriched pathways and hallmark gene sets. This repository integrates Bash/Linux commands for preprocessing steps—trimming, quality control, and alignment—with R-based analyses for statistical modeling, visualization, and pathway enrichment. Example data, annotated counts, and scripts are included to facilitate reproducibility and hands-on learning. This pipeline can be easily adapted to other RNA-seq datasets, making it a practical guide for researchers aiming to perform end-to-end RNA-seq analysis from raw reads to biologically meaningful insights. By combining widely used tools such as Trimmomatic, FastQC, MultiQC, HISAT2, and DESeq2, this workflow ensures high-quality, reproducible results. It is ideal for anyone seeking a structured, transparent, and detailed approach to bulk RNA-seq analysis in human cell lines under different experimental conditions.
+# Obtaining raw data from GEO
+The dataset that we will be working with comes from Guo et al. Nature Communications 2019. To find the raw sequencing data, we can navigate through the Gene Expression Omnibus (GEO) using the accession number provided in the publication: GSE106305. The GEO page corresponding to this accession number is https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE106305. On this webpage, there is information about where the sequencing data for each sample in the study is stored.
+Our goal is to find differentially expressed genes in response to hypoxia for the LNCaP and PC3 cell lines. Therefore, we will select the control samples for both cell lines (Empty_Vector for LNCaP and siCtrl for PC3) in conditions of either normoxia or hypoxia. The specific samples we need to download are outlined in the table below:
+Sample Name	GSM Identifier	SRA Identifier (SRX)	SRA Runs (SRR, download these)
+LNCaP_RNA-Seq_Empty_Vector_Normoxia_rep1	GSM3145509	SRX4096735	SRR7179504, SRR7179505, SRR7179506, and SRR7179507
+LNCaP_RNA-Seq_Empty_Vector_Normoxia_rep2	GSM3145510	SRX4096736	SRR7179508, SRR7179509, SRR7179510, and SRR7179511
+LNCaP_RNA-Seq_Empty_Vector_Hypoxia_rep1	GSM3145513	SRX4096739	SRR7179520, SRR7179521, SRR7179522, and SRR7179523
+LNCaP_RNA-Seq_Empty_Vector_Hypoxia_rep2	GSM3145514	SRX4096740	SRR7179524, SRR7179525, SRR7179526, and SRR7179527
+PC3_RNA-Seq_siCtrl_Normoxia_rep1	GSM3145517	SRX4096743	SRR7179536
+PC3_RNA-Seq_siCtrl_Normoxia_rep2	GSM3145518	SRX4096744	SRR7179537
+PC3_RNA-Seq_siCtrl_Hypoxia_rep1	GSM3145521	SRX4096747	SRR7179540
+PC3_RNA-Seq_siCtrl_Hypoxia_rep2	GSM3145522	SRX4096748	SRR7179541
+The NCBI stores sequencing data in the form of Sequence Read Archive (SRA) files. Each of the samples is associated with a set of SRA accession numbers, indicated above. First, we need to download the SRA runs for each sample. Then, we will use the SRA files to generate FASTQ files. The FASTQ file is the data format required for bulk RNA-sequencing analysis.
+# Download SRA files using SRA tools
+To download the SRA files onto our machine, we will use the NCBI’s SRA toolkit. In linux, you can type: sudo apt install sra-toolkit in your command line to install the toolkit. You can read more about SRA toolkit here: https://www.ncbi.nlm.nih.gov/books/NBK242621/.
+The toolkit works by first using the prefetch command to download the SRA file associated with the specified SRA ID. The SRA file contains a set of “instructions” for downloading the sequencing data associated with the SRA ID from NCBI.
 
-## 📘 Project Overview
-This repository presents a **comprehensive workflow for bulk RNA-seq data analysis** performed on **LNCaP and PC3 prostate cancer cell lines** under **hypoxic and normoxic** conditions.  
-It integrates preprocessing in **Bash/Linux** and downstream statistical analysis in **R**, using open-source tools such as **Trimmomatic, FastQC, MultiQC, HISAT2, and DESeq2**.
+ 
+We downloaded all the SRA files by making a new directory rnaseq_project. We can see by giving ls command.
+ 
 
-The workflow covers all stages from **raw FASTQ reads to differential expression and pathway enrichment analysis**, ensuring full reproducibility and clarity.
 
----
 
-## 🧬 Workflow Summary
-1. **Quality Trimming:** Adapter and low-quality read removal using Trimmomatic.  
-2. **Quality Control:** FastQC for individual sample QC and MultiQC for summary reports.  
-3. **Alignment:** HISAT2 alignment to the human genome (GRCh38).  
-4. **Quantification:** SAMtools to sort, index, and count aligned reads.  
-5. **Differential Expression:** DESeq2 normalization and DE analysis in R.  
-6. **Functional Analysis:** ReactomePA, fgsea, and clusterProfiler for pathway enrichment.  
-7. **Visualization:** PCA, heatmaps, and volcano plots for exploration.
 
----
 
-## 💻 Bash Preprocessing Workflow
 
-```bash
-#!/bin/bash
-
-FASTQ_DIR="./data"
-GENOME_INDEX="./genome_index/grch38"
-LOGFILE="./results/logfile.txt"
-
-mkdir -p $(dirname "$LOGFILE")
-
-FILES=(
-  "LNCAP_Hypoxia_S1.fastq.gz"
-  "LNCAP_Hypoxia_S2.fastq.gz"
-  "LNCAP_Normoxia_S1.fastq.gz"
-  "LNCAP_Normoxia_S2.fastq.gz"
-  "PC3_Hypoxia_S1.fastq.gz"
-  "PC3_Hypoxia_S2.fastq.gz"
-  "PC3_Normoxia_S1.fastq.gz"
-  "PC3_Normoxia_S2.fastq.gz"
-)
-
-for f in "${FILES[@]}"; do
-  SAMPLE=$(basename "$f" .fastq.gz)
-  echo "Processing $SAMPLE at $(date)" | tee -a $LOGFILE
-  START=$(date +%s)
-
-  hisat2 -q -x $GENOME_INDEX -U $FASTQ_DIR/$f | samtools sort -o results/${SAMPLE}.bam
-  samtools index results/${SAMPLE}.bam
-
-  END=$(date +%s)
-  echo "Finished $SAMPLE in $((END-START)) seconds at $(date)" | tee -a $LOGFILE
-  echo "-----------------------------------" | tee -a $LOGFILE
-done
-```
-
----
-
-## 🧠 R Analysis Pipeline (DESeq2, Annotation & Visualization)
-
-```r
-# Load required libraries
-library(DESeq2)
-library(dplyr)
-library(ggplot2)
-library(pheatmap)
-library(clusterProfiler)
-library(ReactomePA)
-library(org.Hs.eg.db)
-
-# Load counts & metadata
-counts <- read.csv("results/GSE106305_counts_matrix.csv", row.names = 1)
-condition <- c(rep("LNCAP_Hypoxia", 2), rep("LNCAP_Normoxia", 2),
-               rep("PC3_Hypoxia", 2), rep("PC3_Normoxia", 2))
-colData <- data.frame(condition)
-dds <- DESeqDataSetFromMatrix(countData = counts, colData = colData, design = ~ condition)
-
-# DESeq2 analysis
-dds <- DESeq(dds)
-res <- results(dds)
-write.csv(as.data.frame(res), "results/DEG_results.csv")
-```
-
----
-
-## 📊 Visualization Outputs
-
-| Type | Description | Example |
-|------|--------------|----------|
-| PCA Plot | Sample clustering | ![PCA](images/pca_plot.png) |
-| Volcano Plot | Differential expression | ![Volcano](images/volcano_plot.png) |
-| Heatmap | Top 500 variable genes | ![Heatmap](images/heatmap.png) |
-| MultiQC Report | QC summary | ![MultiQC](images/multiqc_report.png) |
-
----
-
-## 🧩 Functional Enrichment Analysis
-
-```r
-library(ReactomePA)
-res_df <- read.csv("results/DEG_results.csv", row.names = 1)
-gene_list <- res_df$log2FoldChange
-names(gene_list) <- rownames(res_df)
-gene_list <- sort(gene_list, decreasing = TRUE)
-
-reactome_results <- gsePathway(gene_list, organism = "human", pvalueCutoff = 0.05)
-dotplot(reactome_results, showCategory = 20)
-```
-
----
-
-## 🧾 License
-This project is released under the MIT License. You are free to reuse and adapt the workflow with proper attribution.
-
----
-
-## 🙌 Author
-**Sunandini Chowdhury**  
-BTech Biotechnology | RNA-seq Analyst  
-📍 India  
-🔗 [LinkedIn](https://linkedin.com) | [GitHub](https://github.com)
