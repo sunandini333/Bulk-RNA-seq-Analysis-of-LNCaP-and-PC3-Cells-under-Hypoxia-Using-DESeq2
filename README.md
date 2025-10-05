@@ -42,15 +42,15 @@ we can easily understand the real time conversion of SRA to Fastq in the subdire
 
 # Concatenation of files into total 8 files 
 Each of the LNCaP samples was associated with four SRA runs, which means that we obtained four resulting FASTQ files for each sample after running fastq_download.py. For each sample, we should concatenate the four files into a single FASTQ file by using the command cat. Below, I perform the concatenation for each of the LNCaP samples:
-cat SRR7179504_pass.fastq.gz SRR7179505_pass.fastq.gz SRR7179506_pass.fastq.gz SRR7179507_pass.fastq.gz  > LNCAP_Normoxia_S1.fastq.gz
-cat SRR7179508_pass.fastq.gz SRR7179509_pass.fastq.gz SRR7179510_pass.fastq.gz SRR7179511_pass.fastq.gz  > LNCAP_Normoxia_S2.fastq.gz
-cat SRR7179520_pass.fastq.gz SRR7179521_pass.fastq.gz SRR7179522_pass.fastq.gz SRR7179523_pass.fastq.gz  > LNCAP_Hypoxia_S1.fastq.gz
-cat SRR7179524_pass.fastq.gz SRR7179525_pass.fastq.gz SRR7179526_pass.fastq.gz SRR7179527_pass.fastq.gz  > LNCAP_Hypoxia_S2.fastq.gz
+`cat SRR7179504_pass.fastq.gz SRR7179505_pass.fastq.gz SRR7179506_pass.fastq.gz SRR7179507_pass.fastq.gz  > LNCAP_Normoxia_S1.fastq.gz`
+`cat SRR7179508_pass.fastq.gz SRR7179509_pass.fastq.gz SRR7179510_pass.fastq.gz SRR7179511_pass.fastq.gz  > LNCAP_Normoxia_S2.fastq.gz`
+`cat SRR7179520_pass.fastq.gz SRR7179521_pass.fastq.gz SRR7179522_pass.fastq.gz SRR7179523_pass.fastq.gz  > LNCAP_Hypoxia_S1.fastq.gz`
+`cat SRR7179524_pass.fastq.gz SRR7179525_pass.fastq.gz SRR7179526_pass.fastq.gz SRR7179527_pass.fastq.gz  > LNCAP_Hypoxia_S2.fastq.gz`
 In contrast, there is only one FASTQ file for each of the PC3 samples. We can just rename them from their SRR identifiers to their real sample names using mv:
-mv SRR7179536_pass.fastq.gz PC3_Normoxia_S1.fastq.gz
-mv SRR7179537_pass.fastq.gz PC3_Normoxia_S2.fastq.gz
-mv SRR7179540_pass.fastq.gz PC3_Hypoxia_S1.fastq.gz
-mv SRR7179541_pass.fastq.gz PC3_Hypoxia_S2.fastq.gz
+`mv SRR7179536_pass.fastq.gz PC3_Normoxia_S1.fastq.gz`
+`mv SRR7179537_pass.fastq.gz PC3_Normoxia_S2.fastq.gz`
+`mv SRR7179540_pass.fastq.gz PC3_Hypoxia_S1.fastq.gz`
+`mv SRR7179541_pass.fastq.gz PC3_Hypoxia_S2.fastq.gz`
 We won’t need the individual SRA runs anymore, so we can remove them all using the command rm SRR*, which removes all the files in the folder that begin with “SRR”. Now, the folder should contain a total of 8 FASTQ files: 4 for LNCaP and 4 for PC3. We are ready to begin aligning these FASTQ files to the reference genome!
 
 <img width="940" height="228" alt="image" src="https://github.com/user-attachments/assets/f00e8880-e0e0-4e2b-8811-9f49637e70d4" />
