@@ -116,6 +116,7 @@ Therefore, to preserve read length and maintain data integrity, we proceeded wit
 However, if in your dataset trimming results in improved read quality (e.g., removal of adapter contamination or low-quality bases), you should proceed with the trimmed FASTQ files for subsequent analysis steps.
 
 
+<img width="940" height="352" alt="image" src="https://github.com/user-attachments/assets/fb011dd3-5f84-4ad5-b6a9-a7d75714810f" />
 
 
 
